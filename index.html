@@ -1,1 +1,258 @@
-<h1>Hello</h1>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rewards</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<!-- Monetag: ড্যাশবোর্ড থেকে পাওয়া SDK স্ক্রিপ্টটা ঠিক এই লাইনের নিচে বসান -->
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--g:#16a34a;--g2:#22c55e;--bg:#f3f6f4;--card:#fff;--t:#14231a;--m:#6b7a70;--r:#dc2626}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Hind Siliguri',system-ui,sans-serif;background:var(--bg);color:var(--t);padding-bottom:env(safe-area-inset-bottom)}
+header{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;position:sticky;top:0;z-index:5;border-bottom:1px solid #e5ece7}
+.av{width:42px;height:42px;border-radius:50%;background:var(--g);color:#fff;display:grid;place-items:center;font-weight:700}
+.nm{flex:1;min-width:0}.nm b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nm small{color:var(--m)}
+button{font:inherit;border:0;cursor:pointer}
+.ic{background:#eef3ef;border-radius:10px;width:40px;height:40px;font-size:20px}
+main{padding:16px;max-width:520px;margin:auto}
+.page{display:none}.page.on{display:block}
+.wallet{background:linear-gradient(135deg,#15803d,var(--g2));color:#fff;border-radius:20px;padding:20px}
+.wallet .big{font-size:38px;font-weight:700;margin:2px 0 14px}
+.stats{display:flex;justify-content:space-between;border-top:1px solid #ffffff55;padding-top:12px;font-size:13px}
+.stats b{display:block;font-size:17px}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.q,.tile{background:var(--card);border-radius:14px;padding:14px 8px;text-align:center;box-shadow:0 1px 3px #0001}
+.q span,.tile span{display:block;font-size:24px}.q small,.tile small{color:var(--m);font-size:12px}
+h2{font-size:18px;margin:18px 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{padding:18px 8px}
+.card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px #0001}
+.prog{height:8px;background:#e5ece7;border-radius:8px;overflow:hidden;margin-top:6px}
+.prog i{display:block;height:100%;background:var(--g);width:0}
+.btn{width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#15803d,var(--g2));color:#fff;font-weight:600;font-size:16px}
+.btn.alt{background:#e8eeea;color:var(--t)}.btn:disabled{opacity:.5}
+.btns{display:flex;gap:10px}
+.h{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #eef2ef}
+.h:last-child{border:0}.h small{color:var(--m);display:block}.plus{color:var(--g);font-weight:700}.minus{color:var(--r);font-weight:700}
+.back{background:none;color:var(--g);font-weight:600;font-size:16px;padding:0 0 12px}
+input{width:100%;font:inherit;padding:12px;border:1px solid #cfd9d2;border-radius:10px;margin-bottom:10px}
+.empty{color:var(--m);text-align:center;padding:18px 0}
+#drawer{position:fixed;inset:0;background:#0006;display:none;z-index:9}
+#drawer.on{display:block}
+#side{background:#fff;width:78%;max-width:320px;height:100%;padding:20px 12px}
+#side button{display:block;width:100%;text-align:left;padding:14px;border-radius:12px;background:none;font-size:16px}
+#side button:active{background:#e8f5ec}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#14231a;color:#fff;padding:10px 16px;border-radius:12px;display:none;z-index:20;max-width:90%}
+@media(prefers-reduced-motion:no-preference){.prog i{transition:width .4s}}
+button:focus-visible{outline:3px solid #86efac;outline-offset:2px}
+</style>
+</head>
+<body>
+<header>
+  <div class="av" id="av">U</div>
+  <div class="nm"><b id="nm">ইউজার</b><small id="uid"></small></div>
+  <button class="ic" onclick="drawer(1)" aria-label="মেনু">☰</button>
+</header>
+
+<main>
+<section class="page on" id="home">
+  <div class="wallet">
+    <small>বর্তমান ব্যালেন্স</small>
+    <div class="big" id="bal">৳0.00</div>
+    <div class="stats">
+      <div>মোট আয়<b id="earned">৳0.00</b></div>
+      <div>টাস্ক সম্পন্ন<b id="tasks">0</b></div>
+      <div>রেফারেল<b id="refc">0</b></div>
+    </div>
+  </div>
+  <div class="row">
+    <button class="q" onclick="go('withdraw')"><span>⬆️</span>উইথড্র<br><small>টাকা তুলুন</small></button>
+    <button class="q" onclick="go('refer')"><span>👥</span>রেফার<br><small>বোনাস পান</small></button>
+    <button class="q" onclick="go('history')"><span>🕘</span>হিস্ট্রি<br><small>সব দেখুন</small></button>
+  </div>
+  <h2>আয় করুন</h2>
+  <div class="grid">
+    <button class="tile" onclick="go('ads')"><span>📺</span>বিজ্ঞাপন দেখুন<br><small>সাথে সাথে আয়</small></button>
+    <button class="tile" onclick="go('tg')"><span>✈️</span>টেলিগ্রাম টাস্ক<br><small>জয়েন করুন</small></button>
+    <button class="tile" onclick="go('refer')"><span>🎁</span>রেফার ও আয়<br><small>বন্ধুকে ডাকুন</small></button>
+    <button class="tile" onclick="bonus()"><span>📅</span>ডেইলি বোনাস<br><small>প্রতিদিন একবার</small></button>
+    <button class="tile" onclick="go('top')"><span>🏆</span>সেরা ইউজার<br><small>রেফার র‍্যাংক</small></button>
+  </div>
+</section>
+
+<section class="page" id="ads">
+  <button class="back" onclick="go('home')">← ফিরে যান</button>
+  <div class="card">
+    <b>আজকের অগ্রগতি</b>
+    <div class="h"><span>এই ঘণ্টায়</span><b><span id="hr">0</span>/3</b></div>
+    <div class="h"><span>আজকে</span><b><span id="dy">0</span>/30</b></div>
+    <div class="prog"><i id="pg"></i></div>
+  </div>
+  <button class="btn" id="adbtn" onclick="watchAd()">▶ বিজ্ঞাপন দেখুন ও আয় করুন</button>
+  <p class="empty" id="adnote"></p>
+</section>
+
+<section class="page" id="tg">
+  <button class="back" onclick="go('home')">← ফিরে যান</button>
+  <div class="card">
+    <div class="h"><b>চ্যানেল জয়েন করুন</b><span class="plus">+৳0.30</span></div>
+    <div class="btns">
+      <button class="btn alt" onclick="joinCh()">জয়েন</button>
+      <button class="btn" id="vbtn" onclick="verifyCh()">ভেরিফাই</button>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="refer">
+  <button class="back" onclick="go('home')">← ফিরে যান</button>
+  <div class="grid">
+    <div class="card" style="text-align:center"><b id="rc2" style="font-size:24px">0</b><br><small>মোট রেফারেল</small></div>
+    <div class="card" style="text-align:center"><b id="re2" style="font-size:24px">৳0.00</b><br><small>রেফার থেকে আয়</small></div>
+  </div>
+  <div class="card">
+    <b>বন্ধুকে ডাকুন</b>
+    <p style="color:var(--m);margin:6px 0 12px">আপনার লিংকে যে নতুন ইউজার আসবে, তার জন্য <b>৳0.50</b> পাবেন।</p>
+    <input id="rl" readonly>
+    <div class="btns">
+      <button class="btn alt" onclick="copyLink()">কপি করুন</button>
+      <button class="btn" onclick="shareLink()">টেলিগ্রামে শেয়ার</button>
+    </div>
+  </div>
+  <h2>আপনার রেফারেল</h2>
+  <div class="card" id="rlist"></div>
+</section>
+
+<section class="page" id="history">
+  <button class="back" onclick="go('home')">← ফিরে যান</button>
+  <div class="grid">
+    <div class="card" style="text-align:center"><small>মোট আয়</small><br><b class="plus" id="he">৳0.00</b></div>
+    <div class="card" style="text-align:center"><small>মোট উইথড্র</small><br><b class="minus" id="hw">৳0.00</b></div>
+  </div>
+  <div class="card" id="hlist"></div>
+</section>
+
+<section class="page" id="top">
+  <button class="back" onclick="go('home')">← ফিরে যান</button>
+  <div class="card" id="toplist"></div>
+</section>
+
+<section class="page" id="withdraw">
+  <button class="back" onclick="go('home')">← ফিরে যান</button>
+  <div class="card">
+    <b>উইথড্র রিকোয়েস্ট</b>
+    <p style="color:var(--m);margin:6px 0 12px">ন্যূনতম উইথড্র: ৳<span id="minw"></span></p>
+    <input id="wm" placeholder="বিকাশ/নগদ নম্বর" inputmode="numeric">
+    <input id="wa" placeholder="পরিমাণ (৳)" inputmode="decimal">
+    <button class="btn" onclick="withdraw()">রিকোয়েস্ট পাঠান</button>
+  </div>
+</section>
+</main>
+
+<div id="drawer" onclick="drawer(0)">
+  <div id="side" onclick="event.stopPropagation()">
+    <button onclick="nav('home')">🏠 হোম</button>
+    <button onclick="nav('history')">🕘 ট্রানজেকশন হিস্ট্রি</button>
+    <button onclick="nav('refer')">🎁 রেফার ও আয়</button>
+    <button onclick="nav('ads')">📺 বিজ্ঞাপন টাস্ক</button>
+    <button onclick="nav('tg')">✈️ টেলিগ্রাম টাস্ক</button>
+    <button onclick="nav('withdraw')">💸 উইথড্র</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ===== সেটিংস: এখানে বদলান ===== */
+const CFG={
+  bot:'imcam_bot', app:'rewards',          // t.me/imcam_bot/rewards
+  adReward:0.10, bonus:0.50, tgReward:0.30, refReward:0.50,
+  hourlyLimit:3, dailyLimit:30, minWithdraw:50,
+  channel:'https://t.me/your_channel',     // টেলিগ্রাম টাস্কের চ্যানেল লিংক
+  monetagFn:'show_ZONE_ID'                 // Monetag SDK ফাংশনের নাম (ড্যাশবোর্ড থেকে)
+};
+/* ডেমো: ডাটা এখন ফোনেই থাকে। আসল ব্যালেন্স অবশ্যই সার্ভারে রাখতে হবে। */
+const tg=window.Telegram&&Telegram.WebApp; if(tg){tg.ready();tg.expand();}
+const U=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user)||{id:0,first_name:'ডেমো ইউজার'};
+const KEY='rw_'+U.id;
+const S=Object.assign({bal:0,earned:0,withdrawn:0,tasks:0,refs:[],hist:[],adTimes:[],lastBonus:'',tgDone:false,joined:false},JSON.parse(localStorage.getItem(KEY)||'{}'));
+const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
+const $=id=>document.getElementById(id);
+const fmt=n=>'৳'+n.toFixed(2);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const today=()=>new Date().toDateString();
+
+function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2200)}
+function drawer(o){$('drawer').classList.toggle('on',!!o)}
+function nav(p){drawer(0);go(p)}
+function go(p){document.querySelectorAll('.page').forEach(s=>s.classList.toggle('on',s.id===p));render();scrollTo(0,0)}
+
+function earn(amt,label){S.bal+=amt;S.earned+=amt;S.hist.unshift({t:label,a:amt,d:Date.now()});save();render()}
+
+/* বিজ্ঞাপন */
+function adCounts(){const now=Date.now();S.adTimes=S.adTimes.filter(t=>new Date(t).toDateString()===today());
+  return{h:S.adTimes.filter(t=>now-t<3600000).length,d:S.adTimes.length}}
+async function watchAd(){
+  const c=adCounts();
+  if(c.h>=CFG.hourlyLimit)return toast('এই ঘণ্টার লিমিট শেষ, পরে আবার চেষ্টা করুন');
+  if(c.d>=CFG.dailyLimit)return toast('আজকের লিমিট শেষ, কাল আবার আসুন');
+  const b=$('adbtn');b.disabled=true;
+  try{
+    const f=window[CFG.monetagFn];
+    if(typeof f==='function'){await f();}           // আসল Monetag বিজ্ঞাপন
+    else{$('adnote').textContent='ডেমো মোড: Monetag SDK বসানো হয়নি';await new Promise(r=>setTimeout(r,3000));}
+    S.adTimes.push(Date.now());S.tasks++;earn(CFG.adReward,'বিজ্ঞাপন দেখে আয়');toast('+'+fmt(CFG.adReward)+' পেয়েছেন');
+  }catch(e){toast('বিজ্ঞাপন দেখানো যায়নি, আবার চেষ্টা করুন')}
+  b.disabled=false;render();
+}
+function bonus(){
+  if(S.lastBonus===today())return toast('আজকের বোনাস নেওয়া হয়ে গেছে');
+  S.lastBonus=today();S.tasks++;earn(CFG.bonus,'ডেইলি বোনাস');toast('+'+fmt(CFG.bonus)+' বোনাস পেয়েছেন');
+}
+
+/* টেলিগ্রাম টাস্ক (ডেমো: আসল যাচাই সার্ভারে getChatMember দিয়ে করতে হবে) */
+function joinCh(){S.joined=true;save();tg?tg.openTelegramLink(CFG.channel):open(CFG.channel,'_blank')}
+function verifyCh(){
+  if(S.tgDone)return toast('এই টাস্ক আগেই সম্পন্ন');
+  if(!S.joined)return toast('আগে চ্যানেলে জয়েন করুন');
+  S.tgDone=true;S.tasks++;earn(CFG.tgReward,'টেলিগ্রাম চ্যানেল টাস্ক');toast('+'+fmt(CFG.tgReward)+' পেয়েছেন');
+}
+
+/* রেফার */
+function link(){return`https://t.me/${CFG.bot}/${CFG.app}?startapp=ref_${U.id}`}
+function copyLink(){navigator.clipboard.writeText(link()).then(()=>toast('লিংক কপি হয়েছে'),()=>{$('rl').select();toast('লিংক সিলেক্ট হয়েছে, কপি করুন')})}
+function shareLink(){const u='https://t.me/share/url?url='+encodeURIComponent(link())+'&text='+encodeURIComponent('এই অ্যাপে কাজ করে আয় করুন!');tg?tg.openTelegramLink(u):open(u,'_blank')}
+
+/* উইথড্র */
+function withdraw(){
+  const a=parseFloat($('wa').value),m=$('wm').value.trim();
+  if(!/^01\d{9}$/.test(m))return toast('সঠিক ১১ ডিজিটের নম্বর দিন');
+  if(!(a>0))return toast('পরিমাণ লিখুন');
+  if(a<CFG.minWithdraw)return toast('ন্যূনতম উইথড্র ৳'+CFG.minWithdraw);
+  if(a>S.bal)return toast('ব্যালেন্স কম');
+  S.bal-=a;S.withdrawn+=a;S.hist.unshift({t:'উইথড্র রিকোয়েস্ট ('+m+')',a:-a,d:Date.now()});save();
+  $('wa').value='';render();toast('রিকোয়েস্ট জমা হয়েছে');
+}
+
+/* রেন্ডার */
+function render(){
+  $('nm').textContent=U.first_name+(U.last_name?' '+U.last_name:'');
+  $('av').textContent=(U.first_name||'U').charAt(0).toUpperCase();
+  $('uid').textContent=U.id?'ID: '+U.id:'ডেমো মোড';
+  $('bal').textContent=fmt(S.bal);$('earned').textContent=fmt(S.earned);
+  $('tasks').textContent=S.tasks;$('refc').textContent=S.refs.length;
+  const c=adCounts();$('hr').textContent=c.h;$('dy').textContent=c.d;
+  $('pg').style.width=Math.min(100,c.d/CFG.dailyLimit*100)+'%';
+  $('rc2').textContent=S.refs.length;
+  $('re2').textContent=fmt(S.refs.length*CFG.refReward);
+  $('rl').value=link();$('minw').textContent=CFG.minWithdraw;
+  $('rlist').innerHTML=S.refs.length?S.refs.map(r=>`<div class="h"><span>${esc(r.n)}<small>${new Date(r.d).toLocaleDateString('bn-BD')}</small></span><b class="plus">+${fmt(CFG.refReward)}</b></div>`).join(''):'<p class="empty">এখনো কেউ আপনার লিংকে জয়েন করেনি। লিংক শেয়ার করে শুরু করুন।</p>';
+  $('he').textContent=fmt(S.earned);$('hw').textContent=fmt(S.withdrawn);
+  $('hlist').innerHTML=S.hist.length?S.hist.slice(0,50).map(h=>`<div class="h"><span>${esc(h.t)}<small>${new Date(h.d).toLocaleString('bn-BD')}</small></span><b class="${h.a>0?'plus':'minus'}">${h.a>0?'+':'−'}${fmt(Math.abs(h.a))}</b></div>`).join(''):'<p class="empty">এখনো কোনো লেনদেন নেই। একটা বিজ্ঞাপন দেখে শুরু করুন।</p>';
+  $('toplist').innerHTML=`<div class="h"><span>👑 ${esc(U.first_name)}<small>ID: ${U.id}</small></span><b class="plus">${S.refs.length} রেফার</b></div><p class="empty">সব ইউজারের র‍্যাংক সার্ভার চালু হলে এখানে দেখাবে।</p>`;
+  $('vbtn').textContent=S.tgDone?'সম্পন্ন ✓':'ভেরিফাই';
+}
+render();
+</script>
+</body>
+  </html>
